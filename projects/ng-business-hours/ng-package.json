@@ -3,8 +3,5 @@
   "dest": "../../dist/ng-business-hours",
   "lib": {
     "entryFile": "src/public-api.ts",
-    "umdModuleIds": {
-      "moment": "moment"
-    }
   }
 }
