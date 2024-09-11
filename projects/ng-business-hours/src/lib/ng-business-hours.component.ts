@@ -1,4 +1,4 @@
-import {Component, forwardRef, Input, OnDestroy, OnInit} from '@angular/core';
+import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -7,13 +7,13 @@ import {
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   ValidationErrors,
-  Validator
+  Validator,
 } from '@angular/forms';
-import {Subscription} from 'rxjs';
+import { Subscription } from 'rxjs';
 import moment from 'moment';
-import {LocalizedDatePipe} from './localized-date.pipe';
-import {daySettingsValidator} from './day-settings.validator';
-import {NgBusinessHoursDaySettings} from './ng-business-hours-day-settings.model';
+import { LocalizedDatePipe } from './localized-date.pipe';
+import { daySettingsValidator } from './day-settings.validator';
+import { NgBusinessHoursDaySettings } from './ng-business-hours-day-settings.model';
 
 @Component({
   selector: 'ng-business-hours',
@@ -29,10 +29,12 @@ import {NgBusinessHoursDaySettings} from './ng-business-hours-day-settings.model
       provide: NG_VALIDATORS,
       multi: true,
       useExisting: forwardRef(() => NgBusinessHoursComponent),
-    }
-  ]
+    },
+  ],
 })
-export class NgBusinessHoursComponent implements OnInit, OnDestroy, ControlValueAccessor, Validator {
+export class NgBusinessHoursComponent
+  implements OnInit, OnDestroy, ControlValueAccessor, Validator
+{
   @Input() timeFromLabel: string | undefined;
   @Input() timeToLabel: string | undefined;
   @Input() validationErrorMessage: string | undefined;
@@ -53,32 +55,42 @@ export class NgBusinessHoursComponent implements OnInit, OnDestroy, ControlValue
 
   weekdays!: number[];
   defaultBusinessHours: NgBusinessHoursDaySettings[] = [
-    {open: true, from: this.timeFrom, to: this.timeTo},
-    {open: true, from: this.timeFrom, to: this.timeTo},
-    {open: true, from: this.timeFrom, to: this.timeTo},
-    {open: true, from: this.timeFrom, to: this.timeTo},
-    {open: true, from: this.timeFrom, to: this.timeTo},
-    {open: false, from: '', to: ''},
-    {open: false, from: '', to: ''},
+    // TODO: update to reflect new interface
+    { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
+    { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
+    { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
+    { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
+    { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
+    { open: true, shifts: [{ from: '', to: '' }] },
+    { open: true, shifts: [{ from: '', to: '' }] },
   ];
   businessHours!: NgBusinessHoursDaySettings[];
 
   onChange = (obj: NgBusinessHoursDaySettings[]) => {
     const values = Object.values(obj);
     this.onValuesChange(values);
-  }
+  };
   onValuesChange = (value: NgBusinessHoursDaySettings[]) => {};
   onTouched = () => {};
 
-  constructor(private localizedDatePipe: LocalizedDatePipe, private fb: FormBuilder) {
+  constructor(
+    private localizedDatePipe: LocalizedDatePipe,
+    private fb: FormBuilder,
+  ) {
     this.weekdays = Array.from(Array(7).keys());
-    this.timeOptions = this.getTimeOptions(this.startTime, this.maxTime, this.interval);
+    this.timeOptions = this.getTimeOptions(
+      this.startTime,
+      this.maxTime,
+      this.interval,
+    );
     this.businessHours = this.defaultBusinessHours;
     this.initForm();
   }
 
   ngOnInit(): void {
-    this.formValueChangesSubscription = this.form.valueChanges.subscribe(this.onChange);
+    this.formValueChangesSubscription = this.form.valueChanges.subscribe(
+      this.onChange,
+    );
   }
 
   registerOnChange(fn: any): void {
@@ -100,11 +112,11 @@ export class NgBusinessHoursComponent implements OnInit, OnDestroy, ControlValue
 
   writeValue(obj: []): void {
     if (obj && obj.length > 0) {
-      const values = {...obj};
+      const values = { ...obj };
       this.businessHours = values;
-      this.form.setValue(values, {emitEvent: false});
+      this.form.setValue(values, { emitEvent: false });
     } else {
-      this.form.setValue(this.defaultBusinessHours, {emitEvent: true});
+      this.form.setValue(this.defaultBusinessHours, { emitEvent: true });
     }
   }
 
@@ -113,7 +125,7 @@ export class NgBusinessHoursComponent implements OnInit, OnDestroy, ControlValue
       return null;
     }
 
-    return {businessHoursInvalid: true};
+    return { businessHoursInvalid: true };
   }
 
   onChangeOperationState(i: number): void {
@@ -134,26 +146,55 @@ export class NgBusinessHoursComponent implements OnInit, OnDestroy, ControlValue
   }
 
   getDateForWeekDay(num: number): Date {
-    return moment().startOf(this.isoWeek ? 'isoWeek' : 'week').add(num, 'day').toDate();
+    return moment()
+      .startOf(this.isoWeek ? 'isoWeek' : 'week')
+      .add(num, 'day')
+      .toDate();
   }
 
   private initForm(): void {
     this.form = this.fb.group({});
     let fg;
     this.weekdays.forEach((value, index) => {
+      // TODO: refactor to use new Angular group api
       fg = this.fb.group(
         {
-          open: [{value: this.businessHours[index].open, disabled: this.disabled}],
-          from: [{value: this.businessHours[index].from, disabled: this.disabled}],
-          to: [{value: this.businessHours[index].to, disabled: this.disabled}],
+          open: [
+            { value: this.businessHours[index].open, disabled: this.disabled },
+          ],
+          // Create shifts control
+          // TODO: how to iterate over multiple shifts on the same day?
+          // Use a nested loop of some type?
+          shifts: [
+            {
+              value: this.fb.array(
+                this.businessHours[index].shifts.map((shift) => {
+                  this.fb.group({
+                    from: [{ value: shift.from, disabled: this.disabled }],
+                    to: [{ value: shift.to, disabled: this.disabled }],
+                  });
+                }),
+              ),
+              disabled: this.disabled,
+            },
+          ],
         },
-        {validators: daySettingsValidator}
+        { validators: daySettingsValidator },
       );
       this.form.addControl(String(index), fg);
     });
   }
 
-  private getTimeOptions(startTime: string, maxTime: string, interval: number): string[] {
+  // TODO: implement these functions to use in the html after finishing data type problem above
+  addShift() {}
+  removeShift() {}
+  changeShift() {}
+
+  private getTimeOptions(
+    startTime: string,
+    maxTime: string,
+    interval: number,
+  ): string[] {
     const start = moment(startTime, 'HH:mm');
     const max = moment(maxTime, 'HH:mm');
 
