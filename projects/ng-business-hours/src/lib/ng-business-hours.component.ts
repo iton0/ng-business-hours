@@ -13,7 +13,10 @@ import { Subscription } from 'rxjs';
 import moment from 'moment';
 import { LocalizedDatePipe } from './localized-date.pipe';
 import { daySettingsValidator } from './day-settings.validator';
-import { NgBusinessHoursDaySettings } from './ng-business-hours-day-settings.model';
+import {
+  Shift,
+  NgBusinessHoursDaySettings,
+} from './ng-business-hours-day-settings.model';
 
 @Component({
   selector: 'ng-business-hours',
@@ -55,14 +58,20 @@ export class NgBusinessHoursComponent
 
   weekdays!: number[];
   defaultBusinessHours: NgBusinessHoursDaySettings[] = [
-    // TODO: update to reflect new interface
+    {
+      open: true,
+      shifts: [
+        { from: this.timeFrom, to: this.timeTo },
+        { from: this.timeFrom, to: this.timeTo },
+        //{ from: '21:00', to: '4:00', overnight: true },
+      ],
+    },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
-    { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
-    { open: true, shifts: [{ from: '', to: '' }] },
-    { open: true, shifts: [{ from: '', to: '' }] },
+    { open: false, shifts: [{ from: '', to: '' }] },
+    { open: false, shifts: [{ from: '', to: '' }] },
   ];
   businessHours!: NgBusinessHoursDaySettings[];
 
@@ -137,11 +146,15 @@ export class NgBusinessHoursComponent
     this.form.get(String(i))?.get('open')?.setValue(this.businessHours[i].open);
 
     if (this.businessHours[i].open) {
-      this.form.get(String(i))?.get('from')?.setValue(this.timeFrom);
-      this.form.get(String(i))?.get('to')?.setValue(this.timeTo);
+      this.form
+        .get(String(i))
+        ?.get('shifts')
+        ?.get('from')
+        ?.setValue(this.timeFrom);
+      this.form.get(String(i))?.get('shifts')?.get('to')?.setValue(this.timeTo);
     } else {
-      this.form.get(String(i))?.get('from')?.setValue('');
-      this.form.get(String(i))?.get('to')?.setValue('');
+      this.form.get(String(i))?.get('shifts')?.get('from')?.setValue('');
+      this.form.get(String(i))?.get('shifts')?.get('to')?.setValue('');
     }
   }
 
@@ -154,30 +167,22 @@ export class NgBusinessHoursComponent
 
   private initForm(): void {
     this.form = this.fb.group({});
-    let fg;
+
     this.weekdays.forEach((value, index) => {
-      // TODO: refactor to use new Angular group api
-      fg = this.fb.group(
+      const shiftsArray = this.fb.array(
+        this.businessHours[index].shifts.map((shift) =>
+          this.fb.group({
+            from: [{ value: shift.from, disabled: this.disabled }],
+            to: [{ value: shift.to, disabled: this.disabled }],
+          }),
+        ),
+      );
+      const fg = this.fb.group(
         {
           open: [
             { value: this.businessHours[index].open, disabled: this.disabled },
           ],
-          // Create shifts control
-          // TODO: how to iterate over multiple shifts on the same day?
-          // Use a nested loop of some type?
-          shifts: [
-            {
-              value: this.fb.array(
-                this.businessHours[index].shifts.map((shift) => {
-                  this.fb.group({
-                    from: [{ value: shift.from, disabled: this.disabled }],
-                    to: [{ value: shift.to, disabled: this.disabled }],
-                  });
-                }),
-              ),
-              disabled: this.disabled,
-            },
-          ],
+          shifts: shiftsArray,
         },
         { validators: daySettingsValidator },
       );
@@ -185,10 +190,57 @@ export class NgBusinessHoursComponent
     });
   }
 
-  // TODO: implement these functions to use in the html after finishing data type problem above
-  addShift() {}
-  removeShift() {}
-  changeShift() {}
+  // TODO: implement these functions to use in the html
+  addShift(dayIdx: number, newShift: Shift) {
+    const selDay = this.defaultBusinessHours[dayIdx];
+    if (selDay.open && this.hasShiftConflict(selDay, newShift)) {
+      selDay.shifts.push(newShift);
+    } else {
+      return;
+    }
+  }
+
+  removeShift(dayIdx: number, shiftToRemove: Shift) {
+    const selDay = this.defaultBusinessHours[dayIdx];
+    const shiftIdx = selDay.shifts.findIndex(
+      (shift) =>
+        shift.from === shiftToRemove.from && shift.to === shiftToRemove.to,
+    );
+    if (selDay.open && shiftIdx !== -1) {
+      selDay.shifts.splice(shiftIdx, 1);
+    } else {
+      return;
+    }
+  }
+
+  changeShift(dayIdx: number, shiftToChange: Shift, changedShift: Shift) {
+    const selDay = this.defaultBusinessHours[dayIdx];
+    const shiftIdx = selDay.shifts.findIndex(
+      (shift) =>
+        shift.from === shiftToChange.from && shift.to === shiftToChange.to,
+    );
+    if (
+      selDay.open &&
+      shiftIdx !== -1 &&
+      this.hasShiftConflict(selDay, changedShift)
+    ) {
+      selDay.shifts[shiftIdx].from = changedShift.from;
+      selDay.shifts[shiftIdx].to = changedShift.to;
+    } else {
+      return;
+    }
+  }
+
+  private hasShiftConflict(
+    day: NgBusinessHoursDaySettings,
+    currShift: Shift,
+  ): boolean {
+    return !day.shifts.some((shift) => {
+      (shift.from === currShift.from || shift.to === currShift.from) &&
+        (shift.from === currShift.to || shift.to === currShift.to);
+    });
+  }
+  //private createOvernightShift(shift: Shift): void {}
 
   private getTimeOptions(
     startTime: string,
