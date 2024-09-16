@@ -15,27 +15,27 @@ import { LocalizedDatePipe } from './localized-date.pipe';
 import { daySettingsValidator } from './day-settings.validator';
 import {
   Shift,
-  NgBusinessHoursDaySettings,
-} from './ng-business-hours-day-settings.model';
+  NgxBusinessHoursSchedulerDaySettings,
+} from './ngx-business-hours-scheduler-day-settings.model';
 
 @Component({
-  selector: 'ng-business-hours',
-  templateUrl: './ng-business-hours.component.html',
-  styleUrls: ['./ng-business-hours.component.sass'],
+  selector: 'ngx-business-hours-scheduler',
+  templateUrl: './ngx-business-hours-scheduler.component.html',
+  styleUrls: ['./ngx-business-hours-scheduler.component.sass'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => NgBusinessHoursComponent),
+      useExisting: forwardRef(() => NgxBusinessHoursSchedulerComponent),
     },
     {
       provide: NG_VALIDATORS,
       multi: true,
-      useExisting: forwardRef(() => NgBusinessHoursComponent),
+      useExisting: forwardRef(() => NgxBusinessHoursSchedulerComponent),
     },
   ],
 })
-export class NgBusinessHoursComponent
+export class NgxBusinessHoursSchedulerComponent
   implements OnInit, OnDestroy, ControlValueAccessor, Validator
 {
   @Input() timeFromLabel: string | undefined;
@@ -57,7 +57,7 @@ export class NgBusinessHoursComponent
   timeOptions!: string[];
 
   weekdays!: number[];
-  defaultBusinessHours: NgBusinessHoursDaySettings[] = [
+  defaultBusinessHours: NgxBusinessHoursSchedulerDaySettings[] = [
     {
       open: true,
       shifts: [
@@ -73,13 +73,13 @@ export class NgBusinessHoursComponent
     { open: false, shifts: [{ from: '', to: '' }] },
     { open: false, shifts: [{ from: '', to: '' }] },
   ];
-  businessHours!: NgBusinessHoursDaySettings[];
+  businessHours!: NgxBusinessHoursSchedulerDaySettings[];
 
-  onChange = (obj: NgBusinessHoursDaySettings[]) => {
+  onChange = (obj: NgxBusinessHoursSchedulerDaySettings[]) => {
     const values = Object.values(obj);
     this.onValuesChange(values);
   };
-  onValuesChange = (value: NgBusinessHoursDaySettings[]) => {};
+  onValuesChange = (value: NgxBusinessHoursSchedulerDaySettings[]) => {};
   onTouched = () => {};
 
   constructor(
@@ -232,7 +232,7 @@ export class NgBusinessHoursComponent
   }
 
   private hasShiftConflict(
-    day: NgBusinessHoursDaySettings,
+    day: NgxBusinessHoursSchedulerDaySettings,
     currShift: Shift,
   ): boolean {
     return !day.shifts.some((shift) => {

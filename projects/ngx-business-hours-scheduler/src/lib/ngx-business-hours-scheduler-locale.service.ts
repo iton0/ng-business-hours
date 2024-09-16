@@ -1,7 +1,7 @@
-import {Inject, Injectable, LOCALE_ID} from '@angular/core';
+import { Inject, Injectable, LOCALE_ID } from '@angular/core';
 
 @Injectable()
-export class NgBusinessHoursLocaleService {
+export class NgxBusinessHoursSchedulerLocaleService {
   private currentLocale: string;
 
   constructor(@Inject(LOCALE_ID) private locale: string) {

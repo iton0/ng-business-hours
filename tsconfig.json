@@ -12,9 +12,9 @@
     "declaration": false,
     "downlevelIteration": true,
     "paths": {
-      "ng-business-hours": [
-        "dist/ng-business-hours/ng-business-hours",
-        "dist/ng-business-hours"
+      "ngx-business-hours-scheduler": [
+        "dist/ngx-business-hours-scheduler/ngx-business-hours-scheduler",
+        "dist/ngx-business-hours-scheduler"
       ]
     },
     "experimentalDecorators": true,

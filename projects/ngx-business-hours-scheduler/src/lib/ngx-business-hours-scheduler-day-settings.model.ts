@@ -3,7 +3,7 @@ export interface Shift {
   to: string;
 }
 
-export interface NgBusinessHoursDaySettings {
+export interface NgxBusinessHoursSchedulerDaySettings {
   open: boolean;
   shifts: Shift[];
   is24?: boolean;

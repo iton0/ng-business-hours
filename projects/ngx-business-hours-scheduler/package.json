@@ -1,5 +1,5 @@
 {
-  "name": "ng-business-hours",
+  "name": "ngx-business-hours-scheduler",
   "version": "0.1.0",
   "keywords": [
     "angular",
@@ -16,12 +16,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexsds/ng-business-hours"
+    "url": "https://github.com/alexsds/ngx-business-hours-scheduler"
   },
   "bugs": {
-    "url": "https://github.com/alexsds/ng-business-hours/issues"
+    "url": "https://github.com/alexsds/ngx-business-hours-scheduler/issues"
   },
-  "homepage": "https://github.com/alexsds/ng-business-hours",
+  "homepage": "https://github.com/alexsds/ngx-business-hours-scheduler",
   "peerDependencies": {
     "@angular/common": "^15.2.0",
     "@angular/core": "^15.2.0",

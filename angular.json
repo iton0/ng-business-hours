@@ -3,38 +3,38 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ng-business-hours": {
+    "ngx-business-hours-scheduler": {
       "projectType": "library",
-      "root": "projects/ng-business-hours",
-      "sourceRoot": "projects/ng-business-hours/src",
+      "root": "projects/ngx-business-hours-scheduler",
+      "sourceRoot": "projects/ngx-business-hours-scheduler/src",
       "prefix": "ng",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/ng-business-hours/tsconfig.lib.json",
-            "project": "projects/ng-business-hours/ng-package.json"
+            "tsConfig": "projects/ngx-business-hours-scheduler/tsconfig.lib.json",
+            "project": "projects/ngx-business-hours-scheduler/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ng-business-hours/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ngx-business-hours-scheduler/tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/ng-business-hours/src/test.ts",
-            "tsConfig": "projects/ng-business-hours/tsconfig.spec.json",
-            "karmaConfig": "projects/ng-business-hours/karma.conf.js"
+            "main": "projects/ngx-business-hours-scheduler/src/test.ts",
+            "tsConfig": "projects/ngx-business-hours-scheduler/tsconfig.spec.json",
+            "karmaConfig": "projects/ngx-business-hours-scheduler/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/ng-business-hours/tsconfig.lib.json",
-              "projects/ng-business-hours/tsconfig.spec.json"
+              "projects/ngx-business-hours-scheduler/tsconfig.lib.json",
+              "projects/ngx-business-hours-scheduler/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -166,5 +166,5 @@
       }
     }
   },
-  "defaultProject": "ng-business-hours"
+  "defaultProject": "ngx-business-hours-scheduler"
 }

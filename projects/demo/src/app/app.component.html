@@ -1,5 +1,5 @@
 <div class="" style="margin: 2rem">
-  <h1>ng-business-hours</h1>
+  <h1>ngx-business-hours-scheduler</h1>
   <hr />
   <b>Settings</b>
   <br />
@@ -16,7 +16,7 @@
   Iso week: {{ isoWeek }}
   <br />
   <br />
-  <ng-business-hours
+  <ngx-business-hours-scheduler
     [(ngModel)]="businessHours"
     [disabled]="disabled"
     [isoWeek]="isoWeek"
@@ -27,7 +27,7 @@
       getLocale() === 'ru' ? validationErrorMessageRu : undefined
     "
   >
-  </ng-business-hours>
+  </ngx-business-hours-scheduler>
   <br />
   Valid: {{ !input.invalid }}
   <br />

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { LocaleService } from './locale.service';
-import { NgBusinessHoursLocaleService } from '../../../ng-business-hours/src/lib/ng-business-hours-locale.service';
+import { NgxBusinessHoursSchedulerLocaleService } from '../../../ngx-business-hours-scheduler/src/lib/ngx-business-hours-scheduler-locale.service';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +17,7 @@ export class AppComponent {
 
   constructor(
     private localeService: LocaleService,
-    private ngBusinessHoursLocaleService: NgBusinessHoursLocaleService,
+    private ngBusinessHoursLocaleService: NgxBusinessHoursSchedulerLocaleService,
   ) {}
 
   getLocale(): string {
