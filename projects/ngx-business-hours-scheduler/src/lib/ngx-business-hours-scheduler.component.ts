@@ -4,6 +4,7 @@ import {
   ControlValueAccessor,
   FormBuilder,
   FormGroup,
+  FormArray,
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   ValidationErrors,
@@ -13,10 +14,7 @@ import { Subscription } from 'rxjs';
 import moment from 'moment';
 import { LocalizedDatePipe } from './localized-date.pipe';
 import { daySettingsValidator } from './day-settings.validator';
-import {
-  Shift,
-  NgxBusinessHoursSchedulerDaySettings,
-} from './ngx-business-hours-scheduler-day-settings.model';
+import { NgxBusinessHoursSchedulerDaySettings } from './ngx-business-hours-scheduler-day-settings.model';
 
 @Component({
   selector: 'ngx-business-hours-scheduler',
@@ -58,26 +56,18 @@ export class NgxBusinessHoursSchedulerComponent
 
   weekdays!: number[];
   defaultBusinessHours: NgxBusinessHoursSchedulerDaySettings[] = [
-    {
-      open: true,
-      shifts: [
-        { from: this.timeFrom, to: this.timeTo },
-        { from: this.timeFrom, to: this.timeTo },
-        //{ from: '21:00', to: '4:00', overnight: true },
-      ],
-    },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
     { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
-    { open: false, shifts: [{ from: '', to: '' }] },
-    { open: false, shifts: [{ from: '', to: '' }] },
+    { open: true, shifts: [{ from: this.timeFrom, to: this.timeTo }] },
+    { open: false, shifts: [] },
+    { open: false, shifts: [] },
   ];
   businessHours!: NgxBusinessHoursSchedulerDaySettings[];
 
   onChange = (obj: NgxBusinessHoursSchedulerDaySettings[]) => {
-    const values = Object.values(obj);
-    this.onValuesChange(values);
+    this.onValuesChange(obj);
   };
   onValuesChange = (value: NgxBusinessHoursSchedulerDaySettings[]) => {};
   onTouched = () => {};
@@ -87,12 +77,12 @@ export class NgxBusinessHoursSchedulerComponent
     private fb: FormBuilder,
   ) {
     this.weekdays = Array.from(Array(7).keys());
+    this.businessHours = this.defaultBusinessHours;
     this.timeOptions = this.getTimeOptions(
       this.startTime,
       this.maxTime,
       this.interval,
     );
-    this.businessHours = this.defaultBusinessHours;
     this.initForm();
   }
 
@@ -119,22 +109,17 @@ export class NgxBusinessHoursSchedulerComponent
     }
   }
 
-  writeValue(obj: []): void {
+  writeValue(obj: NgxBusinessHoursSchedulerDaySettings[]): void {
     if (obj && obj.length > 0) {
-      const values = { ...obj };
-      this.businessHours = values;
-      this.form.setValue(values, { emitEvent: false });
+      this.businessHours = obj;
+      this.form.setValue(this.businessHours, { emitEvent: false });
     } else {
       this.form.setValue(this.defaultBusinessHours, { emitEvent: true });
     }
   }
 
   validate(control: AbstractControl): ValidationErrors | null {
-    if (this.form.valid) {
-      return null;
-    }
-
-    return { businessHoursInvalid: true };
+    return this.form.valid ? null : { businessHoursInvalid: true };
   }
 
   onChangeOperationState(i: number): void {
@@ -146,15 +131,30 @@ export class NgxBusinessHoursSchedulerComponent
     this.form.get(String(i))?.get('open')?.setValue(this.businessHours[i].open);
 
     if (this.businessHours[i].open) {
-      this.form
-        .get(String(i))
-        ?.get('shifts')
-        ?.get('from')
-        ?.setValue(this.timeFrom);
-      this.form.get(String(i))?.get('shifts')?.get('to')?.setValue(this.timeTo);
+      this.addDefaultShift(i);
     } else {
-      this.form.get(String(i))?.get('shifts')?.get('from')?.setValue('');
-      this.form.get(String(i))?.get('shifts')?.get('to')?.setValue('');
+      this.clearShifts(i);
+    }
+  }
+
+  addDefaultShift(dayIdx: number): void {
+    const dayControl = this.form.get(String(dayIdx));
+    if (dayControl) {
+      const shiftsArray = dayControl.get('shifts') as FormArray;
+      shiftsArray.push(
+        this.fb.group({
+          from: [this.timeFrom],
+          to: [this.timeTo],
+        }),
+      );
+    }
+  }
+
+  clearShifts(dayIdx: number): void {
+    const dayControl = this.form.get(String(dayIdx));
+    if (dayControl) {
+      const shiftsArray = dayControl.get('shifts') as FormArray;
+      shiftsArray.clear();
     }
   }
 
@@ -165,9 +165,15 @@ export class NgxBusinessHoursSchedulerComponent
       .toDate();
   }
 
+  getShifts(dayIdx: number): FormArray | null {
+    const dayControl = this.form.get(String(dayIdx));
+    return dayControl instanceof FormGroup
+      ? (dayControl.get('shifts') as FormArray)
+      : null;
+  }
+
   private initForm(): void {
     this.form = this.fb.group({});
-
     this.weekdays.forEach((value, index) => {
       const shiftsArray = this.fb.array(
         this.businessHours[index].shifts.map((shift) =>
@@ -190,58 +196,6 @@ export class NgxBusinessHoursSchedulerComponent
     });
   }
 
-  // TODO: implement these functions to use in the html
-  addShift(dayIdx: number, newShift: Shift) {
-    const selDay = this.defaultBusinessHours[dayIdx];
-    if (selDay.open && this.hasShiftConflict(selDay, newShift)) {
-      selDay.shifts.push(newShift);
-    } else {
-      return;
-    }
-  }
-
-  removeShift(dayIdx: number, shiftToRemove: Shift) {
-    const selDay = this.defaultBusinessHours[dayIdx];
-    const shiftIdx = selDay.shifts.findIndex(
-      (shift) =>
-        shift.from === shiftToRemove.from && shift.to === shiftToRemove.to,
-    );
-    if (selDay.open && shiftIdx !== -1) {
-      selDay.shifts.splice(shiftIdx, 1);
-    } else {
-      return;
-    }
-  }
-
-  changeShift(dayIdx: number, shiftToChange: Shift, changedShift: Shift) {
-    const selDay = this.defaultBusinessHours[dayIdx];
-    const shiftIdx = selDay.shifts.findIndex(
-      (shift) =>
-        shift.from === shiftToChange.from && shift.to === shiftToChange.to,
-    );
-    if (
-      selDay.open &&
-      shiftIdx !== -1 &&
-      this.hasShiftConflict(selDay, changedShift)
-    ) {
-      selDay.shifts[shiftIdx].from = changedShift.from;
-      selDay.shifts[shiftIdx].to = changedShift.to;
-    } else {
-      return;
-    }
-  }
-
-  private hasShiftConflict(
-    day: NgxBusinessHoursSchedulerDaySettings,
-    currShift: Shift,
-  ): boolean {
-    return !day.shifts.some((shift) => {
-      (shift.from === currShift.from || shift.to === currShift.from) &&
-        (shift.from === currShift.to || shift.to === currShift.to);
-    });
-  }
-  //private createOvernightShift(shift: Shift): void {}
-
   private getTimeOptions(
     startTime: string,
     maxTime: string,
@@ -252,7 +206,7 @@ export class NgxBusinessHoursSchedulerComponent
 
     const timeOptions = [];
     while (start <= max) {
-      timeOptions.push(moment(start).format(this.timeFormat));
+      timeOptions.push(moment(start).format('HH:mm'));
       start.add(interval, 'minutes');
     }
 

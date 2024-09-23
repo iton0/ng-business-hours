@@ -12,8 +12,6 @@ export class AppComponent {
   businessHours = [];
   disabled = false;
   isoWeek = true;
-  validationErrorMessageRu =
-    '"Начало" рабочего дня должно быть раньше чем "Конец"';
 
   constructor(
     private localeService: LocaleService,

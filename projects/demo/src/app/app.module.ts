@@ -6,11 +6,7 @@ import { NgxBusinessHoursSchedulerModule } from '../../../ngx-business-hours-sch
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import localeRU from '@angular/common/locales/ru';
-import { registerLocaleData } from '@angular/common';
 import { LocaleService } from './locale.service';
-
-registerLocaleData(localeRU);
 
 @NgModule({
   declarations: [AppComponent],

@@ -6,5 +6,4 @@ export interface Shift {
 export interface NgxBusinessHoursSchedulerDaySettings {
   open: boolean;
   shifts: Shift[];
-  is24?: boolean;
 }

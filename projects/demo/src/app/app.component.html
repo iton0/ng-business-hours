@@ -3,12 +3,6 @@
   <hr />
   <b>Settings</b>
   <br />
-  Locale: {{ getLocale() }}&nbsp;| Choose locale:
-  <select (change)="onChangeLocale($event)" [value]="getLocale()">
-    <option value="en">en</option>
-    <option value="ru">ru</option>
-  </select>
-  <br />
   <button (click)="disabled = !disabled">Toggle disabled</button>
   Disabled: {{ disabled }}
   <br />
@@ -21,11 +15,9 @@
     [disabled]="disabled"
     [isoWeek]="isoWeek"
     #input="ngModel"
-    [timeFromLabel]="getLocale() === 'ru' ? 'Начало' : undefined"
-    [timeToLabel]="getLocale() === 'ru' ? 'Конец' : undefined"
-    [validationErrorMessage]="
-      getLocale() === 'ru' ? validationErrorMessageRu : undefined
-    "
+    [timeFromLabel]="undefined"
+    [timeToLabel]="undefined"
+    [validationErrorMessage]="undefined"
   >
   </ngx-business-hours-scheduler>
   <br />
